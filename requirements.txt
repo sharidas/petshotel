@@ -1,0 +1,13 @@
+bcrypt==3.1.7
+email-validator==1.1.1
+Flask==1.1.2
+Flask-Login==0.5.0
+Flask-Mail==0.9.1
+Flask-PyMongo==2.3.0
+itsdangerous==1.1.0
+Jinja2==2.11.2
+pymongo==3.11.0
+requests==2.22.0
+urllib3==1.25.8
+webencodings==0.5.1
+Werkzeug==1.0.1
