@@ -19,20 +19,31 @@ class PetsAPIView(MethodView):
         pet_validate = PetValidator()
         if pet_validate.can_create_pet(current_app.current_user.user):
             pets = Pets()
-            email = current_app.current_user.user['email']
             role = current_app.current_user.user['role']
-            pets.create(data.get('data'), email)
-            return '<h2>Created new pet</h2>\n'
-        return '<h2>No privilege to create pet</h2>\n'
+
+            petdata = data.get('data')
+
+            if role == 'CUSTOMER':
+                email = current_app.current_user.user['email']
+            else:
+                email = petdata.get('owner_email', current_app.current_user.user['email'])
+
+            # Check if same record exists or not?
+            available_pet = pets.get_a_pet({'name': petdata.get('name'), 'owner_email': email})
+            if not available_pet:
+                pets.create(data.get('data'), email)
+                return '<h2>Created new pet</h2>\n', 200
+            return '<h2>Pet already available</h2>\n', 401
+        return '<h2>No privilege to create pet</h2>\n', 401
 
     @login_required
     def put(self):
         data = request.get_json()
 
         if not data.get('data'):
-            return '<h2>Cannot update pet</h2>\n'
-        if not hasattr(app, 'current_user'):
-            return '<h2>Cannot update pet</h2>'
+            return '<h2>Cannot update pet</h2>\n', 401
+        if not hasattr(current_app, 'current_user'):
+            return '<h2>Cannot update pet</h2>', 401
 
         pet_validate = PetValidator()
         petsdb = Pets()
@@ -42,6 +53,8 @@ class PetsAPIView(MethodView):
             print("Val = {}".format(pet_validate.can_update_pet(current_app.current_user.user, petData)))
             if pet_validate.can_update_pet(current_app.current_user.user, petData):
                 petData['data'] = data.get('data')
+                if ('checked_in' in petData['data']) and (not pet_validate.can_checkin_pet(current_app.current_user.user)):
+                    return '<h2>Cannot update pet</h2>', 401
                 petsdb.update(petData)
                 return '<h2>Pet udpated successfully<h2>\n', 200
             else:
@@ -51,16 +64,41 @@ class PetsAPIView(MethodView):
 
     @login_required
     def get(self):
-        pet_validate = PetValidator()
         petsdb = Pets()
         try:
-            if pet_validate.can_see_pet(current_app.current_user.user):
+            user = current_app.current_user.user
+            if user['role'] == 'CUSTOMER':
+                get_all_pets = petsdb.search(user['email'])
+            else:
                 get_all_pets = petsdb.search()
+
+            if get_all_pets:
                 return dumps(get_all_pets)
             return '<h2>Cannot fetch the pets</h2>\n' + '<p>' + dumps(list(get_all_pets)) + '</p\n'
         except Exception as e:
             return '<h2>Cannot fetch the pets</h2>\n'
 
+
+    @login_required
+    def delete(self):
+        data = request.get_json()
+
+        if not data.get('pet_name') and not data.get('owner_email'):
+            return '<h2>Cannot delete pet</h2>\n', 401
+        if not hasattr(current_app, 'current_user'):
+            return '<h2>Cannot delete pet</h2>', 401
+
+        pet_validate = PetValidator()
+
+        if pet_validate.can_delete_pet(current_app.current_user.user):
+            petsdb = Pets()
+            try:
+                petsdb.delete(data)
+                return '<h2>Deleted the pet</h2>', 200
+            except Exception as e:
+                return '<h2>Cannot delete the pet</h2>', 401
+
+        return '<h2>Cannot delete the pet</h2>', 401
 
 
 class PetsHotelCheckin(MethodView):
@@ -83,6 +121,7 @@ class PetsHotelCheckin(MethodView):
                         return '<h2>Pet checked in successfully</h2>\n', 200
 
                 available_rooms = petsdb.available_rooms()
+                print("available rooms = {}".format(available_rooms))
                 if available_rooms.count() == current_app.config.get('HOTEL_ROOMS'):
                     return '<h2>No rooms available for checkin</h2>', 400
 
@@ -135,6 +174,7 @@ pets_checkout_view = PetsHotelCheckout.as_view("pets_checkout_view")
 pets_api.add_url_rule("/pet/create/", view_func=pets_api_view, methods=['POST',])
 pets_api.add_url_rule("/pet/update/", view_func=pets_api_view, methods=['PUT',])
 pets_api.add_url_rule("/pet/get/", view_func=pets_api_view, methods=['GET',])
+pets_api.add_url_rule("/pet/delete/", view_func=pets_api_view, methods=['DELETE',])
 
 
 pets_checkin.add_url_rule("/pet/checkin/", view_func=pets_checkin_view, methods=['PUT',])

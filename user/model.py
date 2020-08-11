@@ -94,7 +94,7 @@ class User(UserMixin):
             return 'Can not get the user'
         
         userdb = current_app.userdb
-        return userdb.db.user.find_one({'email': email})
+        return userdb.db.user.find_one({'email': email}, {'_id': 0})
 
     def set_allow_login(self, user=None):
         if not user:
