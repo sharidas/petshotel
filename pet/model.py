@@ -26,11 +26,23 @@ class Pets():
             petsdb = current_app.petsdb
             petsdb.db.pets.update_one(petsdb.db.pets.find_one({'name': petname, 'owner_email': owner_email}), update_data)
 
+    def delete(self, petdata=None):
+        if not petdata:
+            print("Cannot delete pet")
+            return None
+
+        petsdb = current_app.petsdb
+        try:
+            print("email = {}, name = {}".format(petdata['owner_email'], petdata['pet_name']))
+            petsdb.db.pets.delete_one({'owner_email': petdata['owner_email'], 'name': petdata['pet_name']})
+        except Exception as e:
+            print(e)
+
     def checkin(self, petdata=None):
         if not petdata:
             return '<h2>Cannot checkin the pet</h2>'
 
-        if petdata.get('name') and petdata.get('owner_email'):
+        if petdata.get('name') and petdata.get('owner_email') and petdata.get('room_number'):
             petsdb = current_app.petsdb
             getpet = petsdb.db.pets.find_one({'name': petdata.get('name'), 'owner_email': petdata.get('owner_email')})
             petsdb.db.pets.update_one(getpet, {"$set": {'checked_in': 1, 'room_number': petdata.get('room_number')}})
@@ -55,9 +67,10 @@ class Pets():
         petsdb = current_app.petsdb
         return petsdb.db.pets.find({"room_number": {"$ne": ""}})
 
-    def search(self):
+    def search(self, email=None):
         petsdb = current_app.petsdb
-        return petsdb.db.pets.find({})
+        search_query = {} if not email else {'owner_email': email}
+        return petsdb.db.pets.find(search_query, {'_id': 0})
 
     def get_a_pet(self, petdata=None):
         if not petdata:

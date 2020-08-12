@@ -1,0 +1,3 @@
+- Write tests
+- Check all the endpoints are working properly
+- Make sure the access privileges are working as per the expectations

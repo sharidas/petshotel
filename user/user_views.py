@@ -16,20 +16,25 @@ class UserAPIView(MethodView):
         role = data.get('role')
 
         user = User()
-        user.create_user(username=username, password=password, email=email, role=role)
-        token = urlsafetime.dumps(email, salt='email-confirm')
-        msg = Message('Confirm Email', recipients=[email], sender=current_app.config.get('MAIL_SENDER'))
-        #link = url_for('email_confirm_view.email_api_view', token=token, _external=True)
-        link = url_for('user_action_view.user_api_view', token=token, _method='GET', _external=True)
-        msg.body = 'To signup, kindly click on the link {}'.format(link)
-        mail = Mail(current_app._get_current_object())
-        mail.send(msg)
+
+        # check if the user already exists
+        if not user.get_user(email=email):
+            user.create_user(username=username, password=password, email=email, role=role)
+            token = urlsafetime.dumps(email, salt='email-confirm')
+            msg = Message('Confirm Email', recipients=[email], sender=current_app.config.get('MAIL_SENDER'))
+            #link = url_for('email_confirm_view.email_api_view', token=token, _external=True)
+            link = url_for('user_action_view.user_api_view', token=token, _method='GET', _external=True)
+            msg.body = 'To signup, kindly click on the link {}'.format(link)
+            mail = Mail(current_app._get_current_object())
+            mail.send(msg)
+        else:
+            raise ValueError("User already exists.")
 
     
     def post(self):
         try:
             self.create_and_send_mail()
-            return '<h2>Called user to create</h2>', 200
+            return '<h2>Created user successfully.</h2>', 200
         except ValueError as e:
             return f'{e}', 401
 
@@ -45,14 +50,13 @@ class UserAPIView(MethodView):
         except ValueError as e:
             print(e)
     
-        return '<h2>updated the data</h2>\n'
+        return '<h2>updated the data</h2>'
 
     def get(self, token):
         try:
 
             urlsafetime = URLSafeTimedSerializer(current_app.config.get('SECRET_KEY'))
             email = urlsafetime.loads(token, salt='email-confirm', max_age=current_app.config['TOKEN_LIFE'])
-            #email = urlsafetime.loads(data.get('token'), salt='email-confirm', max_age=current_app.config['TOKEN_LIFE'])
             
             user = User()
             user_obj = user.get_user(email=email)
@@ -78,27 +82,9 @@ class UserAPIView(MethodView):
             user.delete_user(data.get('email'))
         except Exception as e:
             print(e)
-        return '<h2>Deleted the used</h2>'
+            return f'{e}', 401
+        return '<h2>Deleted the user</h2>', 200
 
-    
-        
-
-'''
-class EmailConfirm(MethodView):
-
-    def get(self, token):
-        try:
-            urlsafetime = URLSafeTimedSerializer(current_app.config.get('SECRET_KEY'))
-            email = urlsafetime.loads(token, salt='email-confirm', max_age=current_app.config['TOKEN_LIFE'])
-            
-            user = User()
-            user_obj = user.get_user(email=email)
-            user.set_allow_login(user_obj)
-
-            return '<h1>Now user can login</h1>'
-        except SignatureExpired as e:
-            return '<h2>The token is expired</h2>'
-'''
 
 class UserAuthentication(MethodView):
 

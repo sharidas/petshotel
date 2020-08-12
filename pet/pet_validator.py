@@ -30,3 +30,7 @@ class PetValidator():
         if user['role'] == 'MANAGER':
             return True
         return False
+
+    def can_delete_pet(self, user):
+        return True if user['role'] == 'MANAGER' else False
+
