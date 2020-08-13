@@ -1,0 +1,34 @@
+dist: focal
+sudo: required
+language: python
+services:
+  - mongodb
+
+python:
+  - "3.8"
+
+cache: pip
+
+install:
+  - pip install -r requirements.txt
+
+jobs:
+  include:
+    - stage: test
+    - language: python
+      python: 3.8
+      script:
+        - pytest
+
+    - language: python
+      python: 3.8
+      script:
+        - pylint --fail-under 8 application config.py pet user wsgi.py test
+
+stages:
+  - name: test
+    # require the type to be a PR
+    if: type = pull_request
+  - name: deploy
+    # require the type to be push to master
+    if: type = push AND branch = master
