@@ -3,17 +3,19 @@ from flask_pymongo import PyMongo
 from flask_login import LoginManager
 from user.user_views import user_api, user_auth_api, UserAuthentication
 from pet.pet_views import pets_api, pets_checkin, pets_checkout
-from config import ProductionConfig, DevelopmentConfig
+from config import ProductionConfig, DevelopmentConfig, TestingConfig
 
 def create_app(env=None):
 
     app = Flask(__name__)
 
     with app.app_context():
-        if env == 'test':
+        if env == 'production':
+            app.config.from_object(__name__ + '.ProductionConfig')
+        elif env == 'development':
             app.config.from_object('config.DevelopmentConfig')
         else:
-            app.config.from_object(__name__ + '.ProductionConfig')
+            app.config.from_object('config.TestingConfig')
 
         login_manager = LoginManager()
         login_manager.init_app(app)

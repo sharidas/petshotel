@@ -22,7 +22,6 @@ class UserAPIView(MethodView):
             user.create_user(username=username, password=password, email=email, role=role)
             token = urlsafetime.dumps(email, salt='email-confirm')
             msg = Message('Confirm Email', recipients=[email], sender=current_app.config.get('MAIL_SENDER'))
-            #link = url_for('email_confirm_view.email_api_view', token=token, _external=True)
             link = url_for('user_action_view.user_api_view', token=token, _method='GET', _external=True)
             msg.body = 'To signup, kindly click on the link {}'.format(link)
             mail = Mail(current_app._get_current_object())
