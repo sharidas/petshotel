@@ -3,11 +3,15 @@ sudo: required
 language: python
 services:
   - mongodb
+  - docker
 
 python:
   - "3.8"
 
 cache: pip
+
+virtualenv:
+  system_site_packages: true
 
 install:
   - pip install -r requirements.txt
@@ -32,3 +36,11 @@ stages:
   - name: deploy
     # require the type to be push to master
     if: type = push AND branch = master
+
+deploy:
+  on:
+    branch: master
+    script:
+      docker-compose build
+      echo "$DOCKER_USERNAME" | docker login -u "$DOCKER_PASSWORD" --password-stdin
+      docker push sharidasan/petshotel
