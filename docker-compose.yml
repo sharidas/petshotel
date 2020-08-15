@@ -1,0 +1,21 @@
+version: '3'
+
+services: 
+    mailhog:
+        image: mailhog/mailhog:latest
+        ports: 
+            - "1025:1025"
+            - "8025:8025"
+
+    petshotel:
+        image: sharidasan/petshotel
+        depends_on:
+            - mailhog
+        build:
+            context: .
+        environment:
+            - FLASK_ENV="production"
+        ports:
+            - "5000:5000"
+
+

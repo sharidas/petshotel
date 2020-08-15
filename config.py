@@ -18,13 +18,13 @@ class ProductionConfig(Config):
     This configuration is used for the production
     """
 
-    DEBUG = True
+    DEBUG = False
     TESTING = False
     SESSION_TYPE = "filesystem"
-    SECRET_KEY = "Thisisasecretkey"  # modify this to a different value
+    SECRET_KEY = "Thisisasecretkeyforproduction"  # modify this to a different value
     TOKEN_LIFE = 3600  # 1 hour
     MAIL_SENDER = "test@foo.com"
-    MAIL_SERVER = "0.0.0.0"
+    MAIL_SERVER = "mailhog"
     MAIL_PORT = 1025
     MAIL_USERNAME = ""
     MAIL_PASSWORD = ""
