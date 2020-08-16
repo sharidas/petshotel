@@ -35,10 +35,3 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
-    - name: Docker login and push
-      if: github.event.push == 'true'
-      uses: docker/build-push-action@v1
-      with:
-        username: ${{ secrets.D_U_NAME }}
-        password: ${{ secrets.D_U_PASSWD }}
-        repository: sharidasan/petshotel
