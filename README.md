@@ -101,3 +101,26 @@ endpoints.
     - `curl -u "user3@test.com":"********" http://localhost:5000/pet/get/`
 
         This endpoint will allow to get the pets owned by user3
+
+
+#### Kubernetes Setup
+
+As this setup relies on mailhog + flask, the yaml files are created by keeping the same in mind. This can be changed of-course :)
+
+To test the same I have used minikube. I expect you to start minikube, so that you have access to `kubectl` and execute the steps shown below:
+
+-  ```kubectl apply -f flask-app-deployment.yaml```
+-  ```kubectl apply -f  mailhog-deployment.yaml```
+-  ```kubectl apply -f flask-port.yaml``` 
+-  ```kubectl apply -f mailhog-port.yaml```
+
+Now we could have used CoreDNS to get the flask app pod access the mailhog pod. But instead I make it simple, edit the /etc/hosts of the flask app pod and add the ip address of mailhog :)
+
+Not yet done, don't you wanna see the mailhog web ui in your localhost? Of-course.
+
+So just execute the step below:
+
+- ```kubectl port-forward <name-of-mailhog-pod> 8025```
+
+Verified the user creation and login with this setup.
+
