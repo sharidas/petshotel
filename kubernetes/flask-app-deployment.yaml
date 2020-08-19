@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+    name: petshotel-deployment
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            component: web
+    template:
+        metadata:
+            labels:
+                component: web
+        spec:
+            hostname: mytest
+            containers:
+                - name: flask-app
+                  image: sharidasan/petshotel
+                  ports:
+                    - containerPort: 5000
+

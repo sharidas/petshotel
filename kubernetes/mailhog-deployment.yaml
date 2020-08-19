@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+    name: mailhog-deployment
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            component: mailhog-spec
+    template:
+        metadata:
+            labels:
+                component: mailhog-spec
+        spec:
+            hostname: mailhog
+            containers:
+                - name: mailhog
+                  image: mailhog/mailhog:latest
+                  ports:
+                    - containerPort: 8025
+                    - containerPort: 1025
+
