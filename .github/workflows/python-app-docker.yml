@@ -3,8 +3,11 @@
 
 name: Docker Integration
 
+#on:
+#  push:
+#    branches: [ master ]
 on:
-  push:
+  pull_request:
     branches: [ master ]
 
 jobs:
